@@ -1,0 +1,20 @@
+{
+  "name": "my-first-lambda-project",
+  "version": "1.0.0",
+  "description": "My first AWS Lambda project",
+  "main": "src/main/app.js",
+  "dependencies": {
+    "bluebird": "^3.5.0",
+    "uuid": "^3.1.0"
+  },
+  "devDependencies": {
+    "aws-sdk": "^2.119.0",
+    "chai": "^4.1.2",
+    "mocha": "^3.5.3"
+  },
+  "scripts": {
+    "test": "mocha src/test/**/*Test.js"
+  },
+  "author": "Lorenzo Nicora (lorenzo.nicora@wipro.com)",
+  "license": "MIT"
+}
