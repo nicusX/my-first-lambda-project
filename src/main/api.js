@@ -36,8 +36,8 @@ class Api {
     }
 
     this.candidates.save(fullname, email, experience)
-      .then(res => {
-        const resourceLocation = `${resourceBasePath}/${res.id}`;
+      .then(resId => {
+        const resourceLocation = `${resourceBasePath}/${resId}`;
         sendResponse( callback, 201, null, { "Location" : resourceLocation } );
       })
       .catch(err => {

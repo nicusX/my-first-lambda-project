@@ -20,8 +20,8 @@ const makeCandidate = (fullname, email, experience) => {
 
 // Wraps candidates handling functions
 class Candidates {
-  constructor(dynamoDocClient) {
-    this.db = dynamoDocClient;
+  constructor(dbClient) {
+    this.db = dbClient;
   }
 
 
@@ -30,19 +30,14 @@ class Candidates {
     return (typeof fullname === 'string' && typeof email === 'string' && typeof experience === 'number');
   }
 
-  // Save Candidate (returns promise)
+  // Save Candidate (returns promise with the id)
   save(fullname, email, experience) {
     console.log(`Saving candidate ${fullname}`);
 
     const candidate = makeCandidate(fullname, email, experience);
 
-    const dbCandidate = {
-      TableName: process.env.CANDIDATE_TABLE,
-      Item: candidate,
-    };
-
-    return this.db.put(dbCandidate).promise()
-      .then(res => candidate);
+    return this.db.put( candidate )
+      .then( res => res.id );
   }
 
 
@@ -50,13 +45,7 @@ class Candidates {
   list() {
     console.log("List all Candidates.");
 
-    const params = {
-        TableName: process.env.CANDIDATE_TABLE,
-        ProjectionExpression: "id, fullname, email"
-    };
-
-    return this.db.scan(params).promise()
-      .then(data => data.Items );
+    return this.db.list( "id, fullname, email" );
   }
 
 
@@ -64,15 +53,7 @@ class Candidates {
   get(id) {
     console.log(`Retrieving Candidate id:${id}`);
 
-    const params = {
-      TableName: process.env.CANDIDATE_TABLE,
-      Key: {
-        id: id,
-      },
-    };
-
-    return this.db.get(params).promise()
-      .then(data => data.Item );
+    return this.db.get( 'id', id );
   }
 }
 
