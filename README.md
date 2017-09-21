@@ -1,6 +1,9 @@
 # My first AWS Lambda project
 
-Node.js, Serverless
+My personal learning project using AWS Lambdas, Node.js and Serverless
+
+This is a personal learning project, so don't look for best practices or idiomatic code! ;)
+
 
 Inspired by https://serverless.com/blog/node-rest-api-with-serverless-lambda-and-dynamodb/
 
@@ -16,8 +19,6 @@ NPM:
 npm install -g serverless
 npm install -g mocha
 ```
-
-**TODO** Should I also install `chai`, `aws-sdk`, `chai`, `bluebird`, `uuid` packages?
 
 ## Authentication
 
