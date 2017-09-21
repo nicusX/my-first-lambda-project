@@ -27,6 +27,8 @@ provider:
   stage: dev
   region: us-east-1
   environment:
+    GITHUB_CLIENT_ID: ${env:GITHUB_CLIENT_ID}
+    GITHUB_CLIENT_SECRET: ${env:GITHUB_CLIENT_SECRET}
     CANDIDATE_TABLE: ${self:service}-${opt:stage, self:provider.stage}
     # CANDIDATE_EMAIL_TABLE: "candidate-email-${opt:stage, self:provider.stage}"
   # iamRoleStatements:
@@ -99,6 +101,25 @@ functions:
       - http:
           path: candidates/{id}
           method: get
+
+  oauthInitiate:
+    handler: src/main/handler.oauthInitiate
+    memorySize: 128
+    description:  Servlerless sample application - Initiate GitHub OAuth
+    events:
+      - http:
+          path: oauth-initiate
+          method: get
+
+  oauthComplete:
+    handler: src/main/handler.oauthComplete
+    memorySize: 128
+    description:  Servlerless sample application - Return OAuth Auth code from GitHub
+    events:
+      - http:
+          path: oauth-complete
+          method: get
+
 
   # hello:
   #   handler: handler.hello

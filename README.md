@@ -24,4 +24,6 @@ npm install -g mocha
 
 Set `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` env variables.
 
+Also set `GITHUB_CLIENT_ID` and `GITHUB_CLIENT_SECRET` for GitHub OAuth.
+
 Load the keypair `.pem` file into ssh agent.

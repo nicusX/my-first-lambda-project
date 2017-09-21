@@ -1,5 +1,5 @@
 /*
-  "business logic" handling candidates
+  Repository/Service handling Candidates
 */
 
 'use strict';
