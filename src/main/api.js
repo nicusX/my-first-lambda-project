@@ -21,7 +21,7 @@ class Api {
   submit(lambdaProxyEvent, callback) {
     //console.log(lambdaProxyEvent);
 
-    const resourceBasePath =  lambdaProxyEvent.requestContext.path
+    const resourceBasePath =  `https://${lambdaProxyEvent.headers.Host}${lambdaProxyEvent.requestContext.path}`
 
     const requestBody = JSON.parse(lambdaProxyEvent.body);
     const fullname = requestBody.fullname;
