@@ -13,7 +13,7 @@
 #
 # Happy Coding!
 
-service: lorenzo-test1
+service: lorenzo-test
 
 frameworkVersion: ">=1.1.0 <2.0.0"
 
@@ -28,15 +28,15 @@ provider:
   region: us-east-1
   environment:
     CANDIDATE_TABLE: ${self:service}-${opt:stage, self:provider.stage}
-    CANDIDATE_EMAIL_TABLE: "candidate-email-${opt:stage, self:provider.stage}"
-  iamRoleStatements:
-    - Effect: Allow
-      Action:
-        - dynamodb:Query
-        - dynamodb:Scan
-        - dynamodb:GetItem
-        - dynamodb:PutItem
-      Resource: "*"
+    # CANDIDATE_EMAIL_TABLE: "candidate-email-${opt:stage, self:provider.stage}"
+  # iamRoleStatements:
+  #   - Effect: Allow
+  #     Action:
+  #       - dynamodb:Query
+  #       - dynamodb:Scan
+  #       - dynamodb:GetItem
+  #       - dynamodb:PutItem
+  #     Resource: "*"
 
 
 # you can overwrite defaults here
@@ -81,6 +81,7 @@ functions:
       - http:
           path: candidates
           method: post
+
   listCandidates:
     handler: src/main/handler.list
     memorySize: 128
@@ -89,6 +90,7 @@ functions:
       - http:
           path: candidates
           method: get
+
   candidateDetails:
     handler: src/main/handler.get
     memorySize: 128
@@ -154,6 +156,26 @@ resources:
           StreamViewType: "NEW_AND_OLD_IMAGES"
         TableName: ${self:provider.environment.CANDIDATE_TABLE}
 
+    DynamoDBIamPolicy:
+      Type: AWS::IAM::Policy
+      DependsOn:
+        - CandidatesDynamoDbTable
+      Properties:
+        PolicyName: lambda-dynamodb
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Action:
+                - dynamodb:GetItem
+                - dynamodb:PutItem
+                - dynamodb:Scan
+                - dynamodb:BatchWriteItem
+                - dynamodb:Query
+              Resource:
+                - arn:aws:dynamodb:*:*:table/${self:provider.environment.CANDIDATE_TABLE}
+        Roles:
+          - Ref: IamRoleLambdaExecution
 
 # you can add CloudFormation resource templates here
 #resources:
