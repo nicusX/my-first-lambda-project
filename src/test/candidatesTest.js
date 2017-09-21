@@ -3,7 +3,7 @@
 const expect = require('chai').expect;
 
 
-const DbClient = require('../main/clients/DbClient');
+const DbClient = require('../main/clients/dbClient');
 const Candidates = require('../main/candidates');
 
 class MockDbClient extends DbClient {
@@ -17,7 +17,7 @@ class MockDbClient extends DbClient {
   }
 
   list(projection = null) {
-      return Promise.resolve(this.data); // Ignore projection
+      return Promise.resolve(this.data); // TODO add projection
   }
 
   get(idKey, idValue) {
@@ -26,7 +26,7 @@ class MockDbClient extends DbClient {
         return Promise.resolve(item);
       }
     }
-    return Promise.resolve(null); // TODO is this the correct behaviour?
+    return Promise.resolve(null); // TODO is this the correct when no item is found?
   }
 };
 

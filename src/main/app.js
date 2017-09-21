@@ -2,7 +2,7 @@
 'use strict';
 
 const AWS = require('aws-sdk');
-const DbClient = require('./clients/DbClient');
+const DbClient = require('./clients/dbClient');
 const Candidates = require('./candidates');
 const Api = require('./api');
 
