@@ -111,13 +111,13 @@ functions:
           path: oauth-initiate
           method: get
 
-  oauthComplete:
-    handler: src/main/handler.oauthComplete
+  oauthExchangeCode:
+    handler: src/main/handler.oauthExchangeCode
     memorySize: 128
-    description:  Servlerless sample application - Return OAuth Auth code from GitHub
+    description:  Servlerless sample application - Return endpoint from GitHub, to exchang Auth Code with Access Token
     events:
       - http:
-          path: oauth-complete
+          path: oauth-exchange
           method: get
 
 

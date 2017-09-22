@@ -1,43 +1,47 @@
 'use strict';
+/*
+  GitHub OAuth authorisation
+  https://developer.github.com/apps/building-integrations/setting-up-and-registering-oauth-apps/about-authorization-options-for-oauth-apps/
+*/
 
+const httputil = require('../httputil'),
+  redirectToResponse = httputil.redirectToResponse,
+  endpointUri = httputil.endpointUri;
 
-// Absolute URL for the OAuth-complete return endpoint
-const oauthCompleteUrl = (lambdaProxyEvent, oauthCompleteEndpointPath) => ( `https://${lambdaProxyEvent.headers.Host}/${lambdaProxyEvent.requestContext.stage}${oauthCompleteEndpointPath}` );
-
-// URL of GitHub authorise endpoint
-const githHubAutorizeEndpointUrl = (lambdaProxyEvent, gitHubClientId) => ( `http://github.com/login/oauth/authorize?client_id=${gitHubClientId}&redirect_uri=${oauthCompleteUrl(lambdaProxyEvent)}` );
-
-// Generates a Redirect response
-// TODO Can be moved to an util module
-const redirectToResponse = (uri) => ({
-    statusCode: 302,
-    headers: {
-      Location: uri
-    },
-});
 
 // Wraps functions handiling GitHub OAuth authorisation
 class GithubOAuth {
-  constructor(oauthCompleteEndpointPath, gitHubClientId) {
-    this.oauthCompleteEndpointPath = oauthCompleteEndpointPath;
+  constructor(oauthExchangeCodeEndpointPath, gitHubClientId) {
+    this.oauthExchangeCodeEndpointPath = oauthExchangeCodeEndpointPath;
     this.gitHubClientId = gitHubClientId;
   }
+
+  // GitHub authorise endpoint URI
+  _githHubAutorizeEndpointUrl(event){
+    const oauthCompleteUrl = endpointUri(event.headers.Host, event.requestContext.stage, this.oauthExchangeCodeEndpointPath ); // Return URI
+    return `http://github.com/login/oauth/authorize?client_id=${this.gitHubClientId}&redirect_uri=${oauthCompleteUrl}`;
+  };
 
   // Initiate endpoint handler
   initiate(lambdaProxyEvent, callback) {
     console.log('Initiate OAuth code grant');
 
     // Redirect to GitHub authorize endpoint
-    const redirectUri = githHubAutorizeEndpointUrl(lambdaProxyEvent, this.gitHubClientId);
+    const redirectUri = this._githHubAutorizeEndpointUrl(lambdaProxyEvent);
+    //console.log(`Return URI: ${redirectUri}`);
     callback(null, redirectToResponse(redirectUri));
   }
 
-  // Complete endpoint handler
-  complete(lambdaProxyEvent, callback) {
-    console.log('Returning Auth Code from GitHub');
+  // Exchange Code endpoint handler
+  exchangeCode(lambdaProxyEvent, callback) {
+    console.log('Exchanging Auth Code for Access Token');
     console.log(lambdaProxyEvent);
 
-    // TODO Implement
+    // TODO Extract 'code' from queryStringParameters
+    // TODO Post to GitHub Access Token endpoint and retrieve the Access Token (Accept:application/json to receive JSON response)
+    // TODO Store the Access Token for the user
+
+    // TODO Redirect to a final endpoint
     callback("Not yet implemented!", null);
   }
 

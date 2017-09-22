@@ -19,5 +19,5 @@ module.exports.get = (event, context, callback) => api.get(event, callback);
 // GitHub OAuth initiate
 module.exports.oauthInitiate = (event, context, callback) => githubOAuth.initiate(event, callback);
 
-// GitHub OAuth complete
-module.exports.oauthComplete = (event, context, callback) => githubOAuth.complete(event, callback);
+// GitHub return endpoint, to exchange Auth Code with Access Token
+module.exports.oauthExchangeCode = (event, context, callback) => githubOAuth.exchangeCode(event, callback);

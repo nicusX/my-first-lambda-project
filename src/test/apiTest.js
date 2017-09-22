@@ -3,13 +3,15 @@
 const chai = require('chai'),
   expect = chai.expect;
 
-const toPromise = require('./utils').toPromise;
-const makeLambdaProxyEventForPost = require('./utils').makeLambdaProxyEventForPost;
-const makeLambdaProxyEventForGet = require('./utils').makeLambdaProxyEventForGet;
+const testUtils = require('./utils'),
+  toPromise = testUtils.toPromise;
+
 
 const Api = require('../main/api')
 const Candidates = require('../main/candidates');
 
+// Mock Candidate repository class returning fixed data
+// TODO May I do something more elegant, maybe using Sinon?
 class MockCandidates extends Candidates {
   constructor(data, forceFail = false) { // TODO Find a better way to simulate failures
     super();
@@ -40,7 +42,7 @@ class MockCandidates extends Candidates {
   }
 }
 
-
+// Dummy data
 const dummyData = [
   {
     id: '1',
@@ -60,7 +62,51 @@ const dummyData = [
   },
 ];
 
+const validCandidate = {
+  'fullname' : 'My fullname',
+  'email' : 'my@ema.il',
+  'experience' : 42,
+};
+const invalidCandidate = {
+  'fullname' : 'My fullname',
+  'email' : 'my@ema.il',
+  'experience' : 'abc',
+};
+const postCandidateEvent = (candidate) => ( // TODO This relies on knowledge of the internal implementation: what parts of events are used
+  {
+    httpMethod: 'POST', // Not actually used by tests
+    headers : {
+      Host: 'http://my.host'
+    },
+    body: JSON.stringify( candidate ),
+    requestContext:  {
+        path: '/path',
+    },
+  }
+);
 
+const listCandidateEvent = {
+  httpMethod: 'GET', // Not actually used by tests
+  headers : {
+    Host: 'http://my.host'
+  },
+  requestContext:  {
+      path: '/path',
+  },
+};
+
+const getCandidateEvent = (id) => ({
+  httpMethod: 'GET', // Not actually used by tests
+  headers : {
+    Host: 'http://my.host'
+  },
+  pathParameters: {
+    id: id,
+  },
+  requestContext:  {
+      path: '/path',
+  },
+});
 
 describe("Candidates", () => {
   const unit = new Api( new MockCandidates( dummyData ) );
@@ -69,13 +115,7 @@ describe("Candidates", () => {
     const _handler = (evt, cb) => unit.submit(evt, cb);
 
     it('should return a 201, empty body and Location header', (done) => {
-      // Prepare input event
-      const inputEvent = makeLambdaProxyEventForPost('/path',
-      {
-        'fullname' : 'My fullname',
-        'email' : 'my@ema.il',
-        'experience' : 42,
-      });
+      const inputEvent = postCandidateEvent(validCandidate);
 
       toPromise( _handler , inputEvent )
         .then( (res) => {
@@ -86,15 +126,7 @@ describe("Candidates", () => {
     });
 
     it('should return 400 if validation fails', (done) => {
-      const unit = new Api( new MockCandidates( dummyData ) );
-
-      // Prepare input event
-      const inputEvent = makeLambdaProxyEventForPost('/path',
-      {
-        'fullname' : 'My fullname',
-        'email' : 'my@ema.il',
-        'experience' : 'this-is-not-number',
-      });
+      const inputEvent = postCandidateEvent(invalidCandidate);
 
       toPromise( _handler, inputEvent )
         .then( (res) => {
@@ -108,7 +140,7 @@ describe("Candidates", () => {
     const _handler = (evt, cb) => unit.list(evt, cb);
 
     it('should return 200 and body containing expectsd JSON', (done) => {
-      const inputEvent = makeLambdaProxyEventForGet( '/path' );
+      const inputEvent = listCandidateEvent;
 
       toPromise( _handler, inputEvent)
         .then( (res) => {
@@ -125,19 +157,19 @@ describe("Candidates", () => {
     const _handler = (evt, cb) => unit.get(evt, cb);
 
     it('should return 200 and body containing expected item JSON, when id matches', (done) => {
-      const matchingInputEvent = makeLambdaProxyEventForGet( '/path', { id: '1'} );
+      const matchingInputEvent = getCandidateEvent('1');
 
       toPromise( _handler, matchingInputEvent)
         .then( (res) => {
             expect(res.statusCode).to.equal(200);
             expect(JSON.parse(res.body)).to.have.property('id');
             expect(JSON.parse(res.body).id).to.equal('1');
-              expect(JSON.parse(res.body).experience).to.equal(42);
+            expect(JSON.parse(res.body).experience).to.equal(42);
         }).then(done,done);
     });
 
     it('should return 404 when id does not match', (done) => {
-      const notMatchingInputEvent = makeLambdaProxyEventForGet( '/path', { id: 'not-exists'} );
+      const notMatchingInputEvent = getCandidateEvent('not-exists')
 
       toPromise( _handler, notMatchingInputEvent)
         .then( (res) => {
@@ -155,14 +187,7 @@ describe("Candidates (error handling)", () => {
     const _handler = (evt, cb) => unit.submit(evt, cb);
 
     it('should return 500 on repository failure', (done) => {
-
-      // Prepare input event
-      const inputEvent = makeLambdaProxyEventForPost('/path',
-      {
-        'fullname' : 'My fullname',
-        'email' : 'my@ema.il',
-        'experience' : 42,
-      });
+      const inputEvent = postCandidateEvent(validCandidate);
 
       toPromise( _handler , inputEvent )
         .then( (res) => {
@@ -175,7 +200,7 @@ describe("Candidates (error handling)", () => {
     const _handler = (evt, cb) => unit.list(evt, cb);
 
     it('should return 500 on repository failure', (done) => {
-      const inputEvent = makeLambdaProxyEventForGet( '/path' );
+      const inputEvent = listCandidateEvent;
 
       toPromise( _handler , inputEvent )
         .then( (res) => {
@@ -189,7 +214,7 @@ describe("Candidates (error handling)", () => {
     const _handler = (evt, cb) => unit.get(evt, cb);
 
     it('should return 500 on repository failure', (done) => {
-      const inputEvent = makeLambdaProxyEventForGet( '/path', { id: 'not-exists'} );
+      const inputEvent = getCandidateEvent('1');
 
       toPromise( _handler, inputEvent)
         .then( (res) => {
